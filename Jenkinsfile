@@ -1,29 +1,22 @@
 pipeline {
-    agent any
-
-    environment {
-        REPO_URL = 'https://github.com/SuhasPokale/my-first-git-project.git'
+    agent {
+        docker { image 'python:3.11-slim' }
     }
 
     stages {
-        stage('Clone Code') {
+        stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: env.REPO_URL
+                    url: 'https://github.com/SuhasPokale/my-first-git-project.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    if ! command -v python3 >/dev/null 2>&1; then
-                        apt-get update
-                        apt-get install -y python3 python3-venv python3-pip
-                    fi
-
-                    python3 -m venv venv
+                    python -m venv venv
                     . venv/bin/activate
-                    python -m pip install --upgrade pip
+                    pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
