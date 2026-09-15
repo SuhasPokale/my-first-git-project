@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        docker { image 'python:3.11-slim' }
-    }
+    agent any
 
     stages {
         stage('Checkout') {
@@ -14,9 +12,19 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    python -m venv venv
+                    if ! command -v python3 >/dev/null 2>&1; then
+                        if command -v sudo >/dev/null 2>&1; then
+                            sudo apt-get update
+                            sudo apt-get install -y python3 python3-venv python3-pip
+                        else
+                            echo "python3 is required but not installed on this Jenkins agent."
+                            exit 1
+                        fi
+                    fi
+
+                    python3 -m venv venv
                     . venv/bin/activate
-                    pip install --upgrade pip
+                    python -m pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
